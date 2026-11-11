@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from sourceatlas import __version__
-from sourceatlas.api import documents, health
+from sourceatlas.api import documents, health, search
 from sourceatlas.config import Settings, get_settings
 from sourceatlas.db.session import make_engine, make_sessionmaker, run_migrations
 from sourceatlas.embed.providers import make_embedder
@@ -53,6 +53,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(health.router, prefix="/api")
     app.include_router(documents.router, prefix="/api")
+    app.include_router(search.router, prefix="/api")
     return app
 
 
