@@ -71,7 +71,9 @@ class Support:
 
 _DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 # Question-framing words that describe *what is asked* rather than the subject.
-ANCHOR_IGNORE = frozenset("current latest new old now today window period policy policies rule rules time long many much often number amount maximum minimum allowed required need needs".split())
+ANCHOR_IGNORE = frozenset(
+    ["current", "latest", "new", "old", "now", "today", "window", "period", "policy", "policies", "rule", "rules", "time", "long", "many", "much", "often", "number", "amount", "maximum", "minimum", "allowed", "required", "need", "needs"]
+)
 
 
 def claim_support(

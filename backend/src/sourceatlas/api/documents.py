@@ -168,6 +168,64 @@ def upload_document(
     return doc_out(ver.document)
 
 
+class WebIn(BaseModel):
+    url: str = Field(min_length=8, max_length=2000)
+    collection: str = Field(default="Web", min_length=1, max_length=120)
+    tags: list[str] = Field(default_factory=list, max_length=30)
+
+
+@router.post("/documents/web", response_model=DocumentOut, status_code=202)
+def ingest_web(body: WebIn, request: Request, db: DbSession, settings: AppSettings) -> DocumentOut:
+    """Fetch an approved public page (SSRF-protected) and ingest it as an untrusted source."""
+    import io
+
+    from sourceatlas.web.fetch import FetchBlocked, fetch
+
+    try:
+        page = fetch(
+            body.url,
+            allowed_domains=settings.web_allowed_domains or None,
+            timeout=settings.web_timeout_seconds,
+        )
+    except FetchBlocked as exc:
+        raise HTTPException(status_code=422, detail=f"URL rejected: {exc}") from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail="The page could not be fetched") from exc
+    col = get_or_create_collection(db, body.collection)
+    name = "page.html" if page.content_type != "text/plain" else "page.txt"
+    try:
+        ver = register_upload(
+            db,
+            settings,
+            collection=col,
+            src=io.BytesIO(page.body),
+            filename=name,
+            tags=body.tags,
+            meta={"fetched_from": page.final_url},
+        )
+    except (ExtractionError, IngestError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    ver.document.source_type, ver.document.source_uri = "web", page.final_url
+    db.commit()
+    _dispatch(request, db, ver)
+    db.refresh(ver.document)
+    return doc_out(ver.document)
+
+
+@router.get("/web/search")
+def web_search(
+    q: Annotated[str, Query(min_length=2, max_length=300)], settings: AppSettings
+) -> dict[str, Any]:
+    if not settings.searxng_url:
+        raise HTTPException(status_code=503, detail="Web search is not configured (SOURCEATLAS_SEARXNG_URL)")
+    from sourceatlas.web.fetch import searxng
+
+    try:
+        return {"results": searxng(settings.searxng_url, q, timeout=settings.web_timeout_seconds)}
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail="Search provider unavailable") from exc
+
+
 @router.get("/documents", response_model=list[DocumentOut])
 def list_documents(
     db: DbSession,
