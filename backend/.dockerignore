@@ -1,0 +1,5 @@
+.venv
+var
+var-e2e
+**/__pycache__
+.env

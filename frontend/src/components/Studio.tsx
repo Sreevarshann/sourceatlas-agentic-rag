@@ -123,7 +123,7 @@ export function Studio() {
                 </Tabs.List>
                 <Tabs.Content value="answer" className="pt-5">
                   {answer ? <AnswerView answer={answer} onCite={setSelectedPassage} onFollowUp={(q) => ask(q, current?.id)} /> : running && <div className="flex flex-col gap-2"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-5 w-1/2" /></div>}
-                  {current && <p className="mt-6 text-[11px] text-muted">{current.model_name} · {current.embedder} · {(current.duration_ms ?? 0) / 1000}s · {current.llm_usage.calls} LLM calls</p>}
+                  {current && <p className="mt-6 text-[11px] text-muted">{current.model_name} · {current.embedder} · {((current.duration_ms ?? 0) / 1000).toFixed(1)} s · {current.llm_usage.calls} LLM calls</p>}
                 </Tabs.Content>
                 <Tabs.Content value="graph" className="pt-4">{current && <GraphTab id={current.id} onSelect={setSelectedPassage} />}</Tabs.Content>
               </Tabs.Root>

@@ -47,6 +47,60 @@ jobs:
         shell: bash
         run: uvx pip-audit --strict -r <(uv export --frozen --no-dev --no-hashes --no-emit-project)
 
+  web:
+    name: Frontend (lint, types, unit tests, build, audit)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm audit --omit=dev --audit-level=high
+
+  e2e:
+    name: Playwright E2E (hashing embedder + fixture LLM)
+    runs-on: ubuntu-latest
+    needs: [backend, web]
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env: { POSTGRES_USER: sourceatlas, POSTGRES_PASSWORD: sourceatlas_ci_only, POSTGRES_DB: sourceatlas }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U sourceatlas" --health-interval 3s --health-retries 20
+    env:
+      SOURCEATLAS_TEST_ADMIN_URL: postgresql+psycopg://sourceatlas:sourceatlas_ci_only@127.0.0.1:5432/sourceatlas
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: { enable-cache: true }
+      - run: uv python install 3.13
+      - run: uv sync --locked
+        working-directory: backend
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci && npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npx playwright test
+        working-directory: frontend
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-report, path: frontend/playwright-report, retention-days: 7 }
+
+  docker:
+    name: Docker images build
+    runs-on: ubuntu-latest
+    needs: [backend, web]
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose --profile app build
+
   secrets:
     name: Secret scan (full history)
     runs-on: ubuntu-latest

@@ -28,3 +28,15 @@ evaluate-fixture:
 	cd $(BACKEND) && uv run python -m sourceatlas.evaluation.benchmark --mode fixture
 test-live:
 	cd $(BACKEND) && uv run pytest -m live -s
+
+.PHONY: up down e2e screenshots test-web
+up:
+	docker compose --profile app up -d --build
+down:
+	docker compose --profile app down
+test-web:
+	cd frontend && npm run lint && npm run typecheck && npm test
+e2e:
+	cd frontend && npx playwright test
+screenshots:
+	cd frontend && SCREENSHOT_BASE_URL=http://127.0.0.1:3102 npx playwright test

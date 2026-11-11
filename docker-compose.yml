@@ -20,8 +20,31 @@ services:
     mem_limit: 768m
     networks: [sourceatlas]
 
+  api:
+    build: ./backend
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      SOURCEATLAS_DATABASE_URL: postgresql+psycopg://sourceatlas:sourceatlas_local_only@db:5432/sourceatlas
+      SOURCEATLAS_LLM_BASE_URL: http://host.docker.internal:11434
+      SOURCEATLAS_CORS_ORIGINS: '["http://localhost:3102"]'
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes: [sourceatlas-files:/data]
+    ports: ["127.0.0.1:8112:8112"]
+    mem_limit: 1500m
+    networks: [sourceatlas]
+    profiles: [app]
+
+  web:
+    build: { context: ./frontend, args: { SOURCEATLAS_API_ORIGIN: http://api:8112 } }
+    depends_on: [api]
+    ports: ["127.0.0.1:3102:3102"]
+    networks: [sourceatlas]
+    profiles: [app]
+
 volumes:
   sourceatlas-pg:
+  sourceatlas-files:
 
 networks:
   sourceatlas:
