@@ -44,6 +44,7 @@ def settings(tmp_path: Path, database_url: str) -> Settings:
         data_dir=tmp_path / "var",
         llm_provider="fixture",
         embedding_provider="hashing",
+        ingest_inline=True,
         log_level="WARNING",
     )
 

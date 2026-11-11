@@ -9,9 +9,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from sourceatlas import __version__
-from sourceatlas.api import health
+from sourceatlas.api import documents, health
 from sourceatlas.config import Settings, get_settings
 from sourceatlas.db.session import make_engine, make_sessionmaker, run_migrations
+from sourceatlas.embed.providers import make_embedder
+from sourceatlas.ingest.service import Processor
 from sourceatlas.logging import configure_logging
 
 log = logging.getLogger("sourceatlas")
@@ -28,12 +30,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         run_migrations(engine)
         log.info("startup", extra={"environment": settings.environment})
         yield
+        app.state.processor.shutdown()
         engine.dispose()
 
     app = FastAPI(title="SourceAtlas API", version=__version__, lifespan=lifespan)
     app.state.settings = settings
     app.state.engine = engine
     app.state.sessionmaker = make_sessionmaker(engine)
+    app.state.embedder = make_embedder(settings)
+    app.state.processor = Processor(app.state.sessionmaker, settings, app.state.embedder)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
@@ -47,6 +52,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
     app.include_router(health.router, prefix="/api")
+    app.include_router(documents.router, prefix="/api")
     return app
 
 

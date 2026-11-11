@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     embedding_model: str = "nomic-embed-text"
     embedding_dim: int = 768
 
+    # Process uploads synchronously in the request (tests / CLI). Default: background worker.
+    ingest_inline: bool = False
     chunk_tokens: int = 220
     chunk_overlap: int = 40
 
