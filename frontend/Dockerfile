@@ -1,6 +1,7 @@
 FROM node:24-bookworm-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY scripts ./scripts
 RUN npm ci
 COPY . .
 ARG SOURCEATLAS_API_ORIGIN=http://api:8112
