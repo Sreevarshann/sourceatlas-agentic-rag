@@ -74,7 +74,7 @@ class OllamaProvider:
                     "stream": False,
                     "think": False,
                     "format": schema,
-                    "options": {"temperature": 0, "seed": 11, "num_ctx": 8192},
+                    "options": {"temperature": 0, "seed": 11, "num_ctx": 8192, "num_predict": 700},
                     "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
                 },
             )

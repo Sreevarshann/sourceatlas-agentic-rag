@@ -138,9 +138,10 @@ def build_graph(db: Session, embedder: Embedder, llm: LLMProvider) -> Any:
         ]
         queries = list(dict.fromkeys(queries))[:MAX_QUERIES]
         filters = dict(s.get("filters") or {})
+        # The model's collection guess is recorded as a hint only. Using it as a hard
+        # filter hid the right documents in live evaluation ("credential rotation" was
+        # restricted to "Product documentation"); only the user's scope filters search.
         cols = [c for c in out.get("collections") or [] if c in names]
-        if cols and not filters.get("collections") and not filters.get("collection_ids"):
-            filters["collections"] = cols
         return {
             "intent": str(out.get("intent", "factual")),
             "queries": queries,
@@ -148,7 +149,7 @@ def build_graph(db: Session, embedder: Embedder, llm: LLMProvider) -> Any:
             "round": 0,
             "hits": {},
             "quarantined": [],
-            "trace": _t(s, "understand", t0, intent=out.get("intent"), queries=queries, collections=cols),
+            "trace": _t(s, "understand", t0, intent=out.get("intent"), queries=queries, collection_hint=cols),
         }
 
     def retrieve(s: ResearchState) -> ResearchState:
