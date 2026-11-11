@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
+
+/* SourceAtlas — warm porcelain library with indigo ink and turquoise evidence marks. */
+:root {
+  --bg: #f7f3ec;
+  --paper: #fffdf9;
+  --paper-2: #f1ebe0;
+  --line: #e2d9c8;
+  --ink: #1e1d3a;
+  --muted: #6b6779;
+  --indigo: #2f2c7a;
+  --indigo-soft: #e7e5f6;
+  --teal: #237d78;
+  --teal-soft: #dcefec;
+  --sand: #c9a96e;
+  --sand-soft: #f3e9d4;
+  --rose: #b4413c;
+  --rose-soft: #f6e1df;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #15141f;
+  --paper: #1c1b29;
+  --paper-2: #24233a;
+  --line: #34324d;
+  --ink: #efeaf8;
+  --muted: #a39fb8;
+  --indigo: #a7a4ff;
+  --indigo-soft: #2a2856;
+  --teal: #5fd1c6;
+  --teal-soft: #173634;
+  --sand: #e0c48d;
+  --sand-soft: #3a3122;
+  --rose: #f08a84;
+  --rose-soft: #3d2120;
+  color-scheme: dark;
+}
+@theme inline {
+  --color-bg: var(--bg);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-indigo: var(--indigo);
+  --color-indigo-soft: var(--indigo-soft);
+  --color-teal: var(--teal);
+  --color-teal-soft: var(--teal-soft);
+  --color-sand: var(--sand);
+  --color-sand-soft: var(--sand-soft);
+  --color-rose: var(--rose);
+  --color-rose-soft: var(--rose-soft);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+  --font-mono: var(--font-code);
+}
+html, body { background: var(--bg); color: var(--ink); }
+body { font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+.font-serif { font-family: var(--font-display), Georgia, serif; }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 6px; }
+.paper-texture { background-image: radial-gradient(color-mix(in oklab, var(--sand) 18%, transparent) 1px, transparent 1px); background-size: 22px 22px; }
+.skeleton { background: linear-gradient(90deg, var(--paper-2), color-mix(in oklab, var(--paper-2) 50%, var(--line)), var(--paper-2)); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
+@keyframes shimmer { from { background-position: 200% 0 } to { background-position: -200% 0 } }
+mark.evidence { background: color-mix(in oklab, var(--teal) 22%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; } }
+.react-flow__attribution { display: none; }
+.react-flow__controls { box-shadow: none; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.react-flow__controls-button { background: var(--paper); border-bottom: 1px solid var(--line); fill: var(--ink); color: var(--ink); }
+.react-flow__controls-button:hover { background: var(--paper-2); }
