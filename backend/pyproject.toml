@@ -61,6 +61,12 @@ plugins = ["pydantic.mypy"]
 module = ["pgvector.*", "fitz", "fitz.*", "pymupdf", "docx", "docx.*", "trafilatura", "trafilatura.*", "rank_bm25", "plotly.*"]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+# PyMuPDF's document API is only partially annotated.
+module = ["sourceatlas.demo.corpus", "sourceatlas.ingest.extract"]
+disallow_untyped_calls = false
+warn_unused_ignores = false
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"

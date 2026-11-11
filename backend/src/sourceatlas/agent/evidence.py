@@ -72,7 +72,33 @@ class Support:
 _DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 # Question-framing words that describe *what is asked* rather than the subject.
 ANCHOR_IGNORE = frozenset(
-    ["current", "latest", "new", "old", "now", "today", "window", "period", "policy", "policies", "rule", "rules", "time", "long", "many", "much", "often", "number", "amount", "maximum", "minimum", "allowed", "required", "need", "needs"]
+    [
+        "current",
+        "latest",
+        "new",
+        "old",
+        "now",
+        "today",
+        "window",
+        "period",
+        "policy",
+        "policies",
+        "rule",
+        "rules",
+        "time",
+        "long",
+        "many",
+        "much",
+        "often",
+        "number",
+        "amount",
+        "maximum",
+        "minimum",
+        "allowed",
+        "required",
+        "need",
+        "needs",
+    ]
 )
 
 
@@ -104,6 +130,13 @@ def claim_support(
     sem = max((cosine(claim_vec, v) for v in passage_vecs), default=0.0)
     if missing:
         return Support(False, lex, sem, False, f"number(s) {sorted(missing)} not in cited passage")
+    subject = {_stem(w) for w in keywords(question)} - ANCHOR_IGNORE
+    if subject:
+        relevance = len(subject & {_stem(w) for w in keywords(claim)}) / len(subject)
+        # A claim can be faithful to its passage yet not address the question
+        # (benchmark: an "offices in Europe" question answered with a pricing sentence).
+        if relevance < 1 / 3:
+            return Support(False, lex, sem, True, f"claim does not address the question (covers {relevance:.0%} of its subject terms)")
     anchors = {_stem(w) for w in keywords(claim)} & {_stem(w) for w in keywords(question)}
     present = {_stem(w) for w in keywords(ctext + " " + header)}
     anchors = {x for x in anchors if not x.isdigit() and x not in ANCHOR_IGNORE}
