@@ -54,5 +54,9 @@ def client(settings: Settings) -> Iterator[TestClient]:
     app = create_app(settings)
     with TestClient(app) as c:
         with app.state.engine.begin() as conn:  # isolate tests: empty all tables
-            conn.execute(text("TRUNCATE collections, documents, document_versions, passages CASCADE"))
+            conn.execute(
+                text(
+                    "TRUNCATE collections, documents, document_versions, passages, research_sessions CASCADE"
+                )
+            )
         yield c

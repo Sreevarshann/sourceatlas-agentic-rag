@@ -112,3 +112,25 @@ class Passage(Base):
     tsv: Mapped[Any] = mapped_column(
         TSVECTOR, Computed("to_tsvector('english', coalesce(section, '') || ' ' || text)", persisted=True)
     )
+
+
+class ResearchSession(Base):
+    """A question, its verified answer, the evidence used and the recorded tool trace."""
+
+    __tablename__ = "research_sessions"
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    question: Mapped[str] = mapped_column(Text)
+    parent_id: Mapped[str | None] = mapped_column(
+        ForeignKey("research_sessions.id", ondelete="SET NULL"), default=None
+    )
+    status: Mapped[str] = mapped_column(String(24), default="running")
+    filters: Mapped[dict[str, Any]] = mapped_column(default=dict)
+    answer: Mapped[dict[str, Any] | None] = mapped_column(default=None)
+    evidence: Mapped[list[Any]] = mapped_column(default=list)
+    quarantined: Mapped[list[Any]] = mapped_column(default=list)
+    trace: Mapped[list[Any]] = mapped_column(default=list)
+    model_name: Mapped[str | None] = mapped_column(String(160), default=None)
+    embedder: Mapped[str | None] = mapped_column(String(160), default=None)
+    llm_usage: Mapped[dict[str, Any]] = mapped_column(default=dict)
+    duration_ms: Mapped[int | None] = mapped_column(Integer, default=None)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
