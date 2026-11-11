@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     chunk_tokens: int = 220
     chunk_overlap: int = 40
 
+    eval_results_dir: Path = Path("../eval/results")
     searxng_url: str | None = None
     web_allowed_domains: list[str] = Field(default_factory=list)
     web_timeout_seconds: float = 10.0

@@ -136,7 +136,13 @@ def claim_support(
         # A claim can be faithful to its passage yet not address the question
         # (benchmark: an "offices in Europe" question answered with a pricing sentence).
         if relevance < 1 / 3:
-            return Support(False, lex, sem, True, f"claim does not address the question (covers {relevance:.0%} of its subject terms)")
+            return Support(
+                False,
+                lex,
+                sem,
+                True,
+                f"claim does not address the question (covers {relevance:.0%} of its subject terms)",
+            )
     anchors = {_stem(w) for w in keywords(claim)} & {_stem(w) for w in keywords(question)}
     present = {_stem(w) for w in keywords(ctext + " " + header)}
     anchors = {x for x in anchors if not x.isdigit() and x not in ANCHOR_IGNORE}
@@ -146,7 +152,12 @@ def claim_support(
     if anchors and len(missing_anchor) > len(anchors) / 2:
         return Support(False, lex, sem, True, f"claim term(s) {missing_anchor} not in cited passage")
     # High word overlap makes a flipped negation MORE dangerous, never less.
-    if bool(NEGATION.search(claim)) != bool(NEGATION.search(ctext)):
+    # Compare against the passage sentence that best matches the claim, not the whole
+    # passage (live eval: "warranty is 2 years" was rejected because the same passage
+    # also said "water damage is not covered").
+    sentences = [x for p in passages for x in re.split(r"(?<=[.!?])\s+", p) if x.strip()]
+    best = max(sentences, key=lambda x: coverage(NUMBER.sub(" ", claim), [x]), default=ctext)
+    if bool(NEGATION.search(claim)) != bool(NEGATION.search(best)):
         return Support(False, lex, sem, True, "negation mismatch with cited passage")
     ok = lex >= lexical_min or sem >= semantic_min
     return Support(

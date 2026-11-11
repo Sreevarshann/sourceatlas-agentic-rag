@@ -213,6 +213,7 @@ def run(
                 "conflicts": len(a.get("conflicts", [])),
                 "quarantined": len(rs.quarantined),
                 "answer": [c["text"] for c in sup][:3],
+                "reason": a.get("reason"),
                 "rejected": [
                     {"text": c["text"], "reason": c["support"]["reason"]}
                     for c in claims

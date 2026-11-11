@@ -155,6 +155,16 @@ def test_claim_support_accepts_header_dates() -> None:
     assert s.supported, s.reason
 
 
+def test_negation_is_compared_with_the_matching_sentence() -> None:
+    p = ["The hub is covered by a limited hardware warranty of 2 years. Water damage is not covered."]
+    assert claim_support(
+        "The hub warranty is 2 years.", p, None, [None], question="How long is the warranty?"
+    ).supported
+    assert not claim_support(
+        "Water damage is covered.", p, None, [None], question="Is water damage covered?"
+    ).supported
+
+
 def test_claim_support_rules() -> None:
     p = ["Customers may request a refund within 30 days of delivery."]
     assert claim_support("Refunds can be requested within 30 days of delivery.", p, None, [None]).supported
