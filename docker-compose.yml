@@ -1,0 +1,27 @@
+# SourceAtlas local infrastructure. Unique project name / network / volume so it never
+# collides with other local stacks. Postgres is published on localhost only.
+name: sourceatlas
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: sourceatlas
+      POSTGRES_PASSWORD: sourceatlas_local_only
+      POSTGRES_DB: sourceatlas
+    ports:
+      - "127.0.0.1:55502:5432"
+    volumes:
+      - sourceatlas-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sourceatlas"]
+      interval: 3s
+      retries: 20
+    mem_limit: 768m
+    networks: [sourceatlas]
+
+volumes:
+  sourceatlas-pg:
+
+networks:
+  sourceatlas:
